@@ -1,0 +1,84 @@
+---
+title: "NBA Salary Correlation"
+author: "Mohamed Karboj & Fouad Abdulghani"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+
+nba <- read.csv("nba_2022-23_all_stats_with_salary.csv")
+```
+
+# Research Questions:
+
+Do players who score more points per game earn higher salaries?\
+Is there a significant difference in average salary between guards and forwards?
+
+## Descriptive Analysis
+
+#### Histogram
+
+```{r}
+nba |>
+  ggplot(aes(x = PTS)) +
+  geom_histogram(fill = "steelblue", color = "white", bins = 30) +
+  labs(title = "Distribution of Points per Game", x = "Points per Game", y = "Frequency")
+```
+
+#### Box Plot
+
+```{r}
+nba |>
+  ggplot(aes(x = Position, y = Salary, fill = Position)) +
+  geom_boxplot() +
+  labs(title = "Salary Distribution by Position", x = "Position", y = "Salary") +
+  theme_minimal()
+```
+
+#### Scatter Plot
+
+```{r}
+nba |> 
+  ggplot(aes(x = PTS, y = Salary)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(color = "red") +
+  labs(title = "Points per Game vs Salary", x = "Points per Game", y = "Salary")
+```
+
+## Summary Statistics
+
+```{r}
+nba |>
+  group_by(Position) |>
+  summarise(count = n(),
+    mean_salary = mean(Salary, na.rm = TRUE),
+    sd_salary = sd(Salary, na.rm = TRUE),
+    min_salary = min(Salary, na.rm = TRUE),
+    max_salary = max(Salary, na.rm = TRUE))
+```
+
+## Inferential Statistics
+
+#### T-Test
+
+```{r}
+pg_vs_sg <- nba |>
+  filter(Position %in% c("PG", "SG"))
+
+t.test(Salary ~ Position, data = pg_vs_sg)
+```
+
+#### Linear Regression
+
+```{r}
+model <- lm(Salary ~ PTS, data = nba)
+summary(model)
+```
+
+## Conclusion:
+
+-   This analysis explored the relationship between player performance and salary in the NBA during the 2022–23 season. A histogram of points per game showed a right-skewed distribution, with most players scoring under 20 PPG. The boxplot indicated that forwards had slightly higher salary medians than guards, though outliers existed in both groups. The scatterplot of points vs salary suggested a positive trend.
+
+-   Our inferential analysis confirmed this visually observed trend: a simple linear regression found a statistically significant positive correlation between points per game and salary. Additionally, a two-sample t-test showed a statistically significant difference in salaries between guards and forwards. These findings suggest that performance and position are both associated with player compensation in the NBA.
