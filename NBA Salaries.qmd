@@ -1,0 +1,84 @@
+---
+title: "NBA Salary Correlation"
+author: "Mohamed Karboj & Fouad Abdulghani"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+
+nba <- read.csv("nba_2022-23_all_stats_with_salary.csv")
+```
+
+# Research Questions:
+
+Do players who score more points per game earn higher salaries?\
+Is there a significant difference in average salary between point guards or shooting guards?
+
+## Descriptive Analysis
+
+#### Histogram
+
+```{r}
+nba |>
+  ggplot(aes(x = PTS)) +
+  geom_histogram(fill = "steelblue", color = "white", bins = 30) +
+  labs(title = "Distribution of Points per Game", x = "Points per Game", y = "Frequency")
+```
+
+#### Box Plot
+
+```{r}
+nba |>
+  ggplot(aes(x = Position, y = Salary, fill = Position)) +
+  geom_boxplot() +
+  labs(title = "Salary Distribution by Position", x = "Position", y = "Salary") +
+  theme_minimal()
+```
+
+#### Scatter Plot
+
+```{r}
+nba |> 
+  ggplot(aes(x = PTS, y = Salary)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(color = "red") +
+  labs(title = "Points per Game vs Salary", x = "Points per Game", y = "Salary")
+```
+
+## Summary Statistics
+
+```{r}
+nba |>
+  group_by(Position) |>
+  summarise(count = n(),
+    mean_salary = mean(Salary, na.rm = TRUE),
+    sd_salary = sd(Salary, na.rm = TRUE),
+    min_salary = min(Salary, na.rm = TRUE),
+    max_salary = max(Salary, na.rm = TRUE))
+```
+
+## Inferential Statistics
+
+#### T-Test
+
+```{r}
+pg_vs_sg <- nba |>
+  filter(Position %in% c("PG", "SG"))
+
+t.test(Salary ~ Position, data = pg_vs_sg)
+```
+
+#### Linear Regression
+
+```{r}
+model <- lm(Salary ~ PTS, data = nba)
+summary(model)
+```
+
+## Conclusion:
+
+-   This analysis explored how NBA player performance relates to salary during the 2022–23 season. A histogram of points per game showed that most players score fewer than 20 points, with a few high scorers. A boxplot of salaries by position revealed that while all positions have outliers, there are differences in salary distributions depending on role. The scatterplot suggests a positive relationship between points per game and salary, which a linear regression model confirmed.
+
+-   The model found a statistically significant positive correlation: players who score more tend to earn higher salaries. Additionally, a t-test showed a significant salary difference between point guards and shooting guards, indicating that even within a single position group, roles can impact pay. Overall, both performance and specific position are associated with how much a player earns.
